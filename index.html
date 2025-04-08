@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Viewers Twitch - Sasu_SzRn</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: #1e1e1e;
+      color: #ffffff;
+      font-family: Arial, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      font-size: 2em;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div id="viewerCount">Chargement...</div>
+
+  <script>
+    const clientId = 'gp762nuuoqcoxypju8c569th9wz7q5';
+    const accessToken = 'rpkfxyiburdpgv57e22vyoljkp2z29';
+    const username = 'Sasu_SzRn';
+
+    async function getViewerCount() {
+      try {
+        const userResponse = await fetch(`https://api.twitch.tv/helix/users?login=${username}`, {
+          headers: {
+            'Client-ID': clientId,
+            'Authorization': `Bearer ${accessToken}`
+          }
+        });
+
+        const userData = await userResponse.json();
+
+        if (!userData.data || userData.data.length === 0) {
+          throw new Error("Utilisateur Twitch introuvable. Vérifiez le nom de chaîne ou le token.");
+        }
+
+        const userId = userData.data[0].id;
+
+        const streamResponse = await fetch(`https://api.twitch.tv/helix/streams?user_id=${userId}`, {
+          headers: {
+            'Client-ID': clientId,
+            'Authorization': `Bearer ${accessToken}`
+          }
+        });
+
+        const streamData = await streamResponse.json();
+        const stream = streamData.data[0];
+
+        const countElement = document.getElementById('viewerCount');
+
+        if (stream && stream.viewer_count !== undefined) {
+          countElement.textContent = `👁️ ${stream.viewer_count} spectateurs`;
+        } else {
+          countElement.textContent = '🔴 Hors ligne';
+        }
+
+      } catch (error) {
+        document.getElementById('viewerCount').textContent = '❌ Erreur : ' + error.message;
+        console.error('Erreur lors de la récupération des viewers :', error);
+      }
+    }
+
+    getViewerCount();
+    setInterval(getViewerCount, 30000);
+  </script>
+</body>
+</html>
